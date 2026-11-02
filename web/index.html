@@ -23,10 +23,11 @@
 .lab-tabs{display:flex;gap:8px;margin:10px 0}.lab-tabs button{flex:1}.lab-tabs .selected{background:#1c6456;color:white;border-color:#1c6456}.rtk-hero{background:#173e37;color:white;border-radius:16px;padding:18px;margin:12px 0}.rtk-hero.waiting{background:#785327}.rtk-hero .lab-rate{font-size:38px;margin:7px 0}.rtk-hero p{margin:5px 0;font-size:12px;line-height:1.5}.rtk-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.rtk-stats .lab-card{padding:12px}.rtk-stats strong{font-size:23px;display:block;margin:6px 0;font-variant-numeric:tabular-nums}.rtk-stats span{font-size:12px;color:var(--muted)}.rtk-facts{font-size:12px;line-height:1.7;overflow-wrap:anywhere}.lab-dialog details{margin:10px 0}.lab-dialog summary{padding:10px 0;min-height:44px}.rtk-controls{margin:8px 0}.rtk-age-label{font-size:13px;font-weight:650}.rtk-result-status{font-size:12px;font-weight:600;margin-top:12px}
 </style>
 <style>#qualityPane .lab-card strong{font-size:20px;white-space:nowrap}.quality-axis{font-size:18px}</style>
+<style>header{flex-wrap:wrap}#ui-language{font:inherit;max-width:150px;padding:8px;border:1px solid var(--line);border-radius:10px;background:#fff;color:inherit;min-height:44px}</style>
 </head>
 <body>
 <div class="shell">
-<header><div class="brand"><div class="mark" aria-hidden="true">⌁</div><div><div class="eyebrow">Soukromé spojení • bez internetu</div><h1>LoRa Chat<span style="color:#7b9d8b">.</span></h1></div></div><button type="button" class="badge" id="badge" aria-label="Podrobnosti rádiového spojení"><span class="signal-bars" id="signalBars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="signal-copy"><strong id="connection">Připojuji k desce…</strong><small id="signalValue">LoRa · čekám na data</small></span></button></header>
+<header><div class="brand"><div class="mark" aria-hidden="true">⌁</div><div><div class="eyebrow">Soukromé spojení • bez internetu</div><h1>LoRa Chat<span style="color:#7b9d8b">.</span></h1></div></div><select id="ui-language" aria-label="Jazyk / Language"><option value="en">EN · English</option><option value="cs">CZ · Čeština</option></select><button type="button" class="badge" id="badge" aria-label="Podrobnosti rádiového spojení"><span class="signal-bars" id="signalBars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="signal-copy"><strong id="connection">Připojuji k desce…</strong><small id="signalValue">LoRa · čekám na data</small></span></button></header>
 <main class="layout">
 <aside id="sidebar">
 <div class="station"><div class="eyebrow">Tvoje stanice</div><div class="station-number" id="station">Stanice —</div><div class="sub" id="ssid">Wi-Fi přístupový bod</div><div class="link-path" id="linkPath">A · · · LoRa · · · B</div><p id="pairText">Čekám na informace z desky.</p></div>
@@ -124,58 +125,499 @@
 </div></dialog>
 <script>
 'use strict';
+(() => {
+  'use strict';
+  const english = {
+  "Soukromé spojení • bez internetu": "Private connection • no internet",
+  "Podrobnosti rádiového spojení": "Radio link details",
+  "Připojuji k desce…": "Connecting to the board…",
+  "LoRa · čekám na data": "LoRa · waiting for data",
+  "Wi-Fi přístupový bod": "Wi-Fi access point",
+  "Čekám na informace z desky.": "Waiting for board information.",
+  "Tvoje jméno v chatu": "Your chat name",
+  "Např. Jirka": "For example, Your nickname",
+  "Krátká zpráva do dálky.": "A short message over a long distance.",
+  "Fotky automaticky zmenšíme. Přílohy do 64 kB; přenos většího souboru trvá minuty až desítky minut.": "Photos are resized automatically. Attachments can be up to 64 kB; larger files take minutes to tens of minutes to transfer.",
+  "Podrobnosti spojení": "Connection details",
+  "Ukazatel nahoře měří příjem z druhé desky. Čárky jsou orientační podle RSSI a u LoRa také SNR, nikoli procenta doručených zpráv. GFSK neposkytuje SNR. Každý ověřený příjem obnoví signál. V klidu stačí kontrola přibližně jednou za minutu; po 90 s měření zešedne, od 120 s hlásí výpadek. Počítadla režie jsou od restartu a zahrnují i neúspěšné pokusy. Procento porovnává servisní a datové vysílání této desky.": "The indicator above measures reception from the other board. Bars provide a rough estimate based on RSSI and, for LoRa, SNR; they are not the percentage of delivered messages. GFSK does not provide SNR. Each authenticated reception refreshes the signal. While idle, a check roughly once a minute is sufficient; measurements become stale after 90 s and indicate an outage after 120 s. Overhead counters start at boot and include unsuccessful attempts. The percentage compares this board's service and data transmissions.",
+  "869,525 MHz · výkon 10 dBm · vysílání nejvýše 10 % času.": "869.525 MHz · 10 dBm power · maximum 10% transmit duty cycle.",
+  "Na každé desce zůstává posledních 32 zpráv. Rozpracovaný přenos po restartu odešli znovu.": "Each board keeps the last 32 messages. Resend an interrupted transfer after a restart.",
+  "Aktualizace přes Wi-Fi": "Update over Wi-Fi",
+  "vytvořený pro tento pár. Aktualizace zachová historii a desku restartuje. Během nahrávání nech napájení připojené.": "built for this pair. The update preserves history and restarts the board. Keep power connected during the upload.",
+  "Aktualizační soubor": "Update file",
+  "Nahrát firmware": "Upload firmware",
+  "Nahrávání firmwaru": "Firmware upload",
+  "Spojení dvou stanic": "Two stations, connected",
+  "Text, fotografie a soubory přes rádio": "Text, photos and files over radio",
+  "☰ Nastavení": "☰ Settings",
+  "Zprávu lze zařadit do fronty i před navázáním spojení.": "Messages can be queued before the connection is established.",
+  "Zprávy": "Messages",
+  "Tak daleko. Tak blízko.": "So far. So close.",
+  "Připoj druhou stanici a pošli první zprávu.": "Connect the other station and send your first message.",
+  "Celý chat funguje bez internetu.": "The entire chat works without internet access.",
+  "Průběh přenosu": "Transfer progress",
+  "Odebrat přílohu": "Remove attachment",
+  "Přiložit obrázek nebo soubor": "Attach an image or file",
+  "Napiš zprávu…": "Write a message…",
+  "Text zprávy": "Message text",
+  "Odeslat zprávu": "Send message",
+  "Enter odešle · Shift + Enter nový řádek": "Enter sends · Shift + Enter adds a new line",
+  "Nastavení stanice": "Station settings",
+  "Zpět do chatu": "Back to chat",
+  "Test spojení": "Link test",
+  "Signál —": "Signal —",
+  "Zpět": "Back",
+  "Čekám na desku…": "Waiting for the board…",
+  "RTK · terén": "RTK · field test",
+  "Živá analýza příjmu": "Live reception analysis",
+  "Načítám měření…": "Loading measurements…",
+  "Čekám na příjem": "Waiting for reception",
+  "Signál vůči šumu · SNR": "Signal-to-noise ratio · SNR",
+  "Měří rádio v režimu LoRa": "Measured by the radio in LoRa mode",
+  "Odmítnuté · posledních 10 s": "Rejected · last 10 s",
+  "Zachycené události příjmu": "Detected reception events",
+  "Potvrzeno po opakování": "Acknowledged after a retry",
+  "Místní odeslané rámce": "Locally transmitted frames",
+  "Signál a úroveň kanálu · poslední 2 minuty": "Signal and channel level · last 2 minutes",
+  "Časový graf RSSI přijatých paketů a minimální vzorkované úrovně kanálu": "Time plot of received packet RSSI and minimum sampled channel level",
+  "teď": "now",
+  "● RSSI paketů (průměr za 1 s)": "● Packet RSSI (1 s average)",
+  "● Kanál (minimum za 1 s)": "● Channel (1 s minimum)",
+  "Kanál se vzorkuje při příjmu, bez přelaďování. Minimum může přibližovat pozadí, ale obsahuje i cizí vysílání a není samostatným měřením čistého šumu. Chybějící pakety nevytvářejí nové body.": "The channel is sampled during reception without retuning. The minimum may approximate the background level, but also includes other transmissions and is not an independent measurement of pure noise. Missing packets do not create new points.",
+  "Bodový graf RSSI versus SNR, nikoli fázový I/Q diagram": "RSSI versus SNR scatter plot, not an I/Q phase diagram",
+  "Jeden bod je průměr přijatých paketů za sekundu. Vyšší SNR znamená větší odstup signálu od šumu. Záporné SNR je u LoRa možné.": "Each point is the average of packets received in one second. Higher SNR means a greater signal-to-noise ratio. Negative SNR is possible with LoRa.",
+  "Přijaté a odmítnuté rámce / s": "Received and rejected frames / s",
+  "Četnost ověřených a odmítnutých rádiových rámců za sekundu": "Authenticated and rejected radio frames per second",
+  "● Ověřené": "● Authenticated",
+  "● Odmítnuté": "● Rejected",
+  "Počítadla od startu tohoto profilu": "Counters since this profile started",
+  "Uložit analýzu": "Save analysis",
+  "Co tyto grafy umí změřit": "What these charts can measure",
+  "SX1262 neposkytuje surové I/Q vzorky ani počet bitů opravených vnitřním FEC. Skutečný fázově-amplitudový diagram a počet těchto oprav proto nejsou dostupné. Mapa výše zobrazuje měřené RSSI a SNR.": "The SX1262 provides neither raw I/Q samples nor the number of bits corrected by its internal FEC. A true phase/amplitude diagram and the number of these corrections are therefore unavailable. The plot above shows measured RSSI and SNR.",
+  "CRC a hlavička jsou chyby detekované rádiem; formát, autentizaci a relaci kontroluje firmware. Úplně nezachycené vysílání rádio nespočítá. Mezery v číslování jsou pouze mezi ověřenými pakety stejného protějšku, mohou zahrnout jeho neúspěšné pokusy o vysílání a mohou se překrývat s chybami CRC. Tyto počty se nesčítají do celkové ztrátovosti.": "CRC and header errors are detected by the radio; the firmware checks format, authentication and sessions. The radio cannot count transmissions it never detects. Sequence gaps occur only between authenticated packets from the same peer, can include that peer's failed transmission attempts and can overlap with CRC errors. These counts must not be added together as total packet loss.",
+  "Potvrzení po opakování znamená přijetí ACK po více pokusech místního vysílače. Příčinou mohl být ztracený datový rámec i samotné ACK. RTK a benchmark data neopakují. Počítadla a 120s graf jsou v RAM desky, změna profilu nebo restart je vynuluje. Analýza neposílá žádné vlastní pakety přes rádio.": "Acknowledgment after a retry means receiving an ACK after multiple attempts by the local transmitter. The cause may have been a lost data frame or a lost ACK. RTK and benchmark data are not retried. Counters and the 120 s chart are stored in board RAM and reset on a profile change or restart. Analysis sends no additional radio packets.",
+  "Komunikační protokol a rychlost": "Communication protocol and speed",
+  "Protokol / rádiový profil": "Protocol / radio profile",
+  "Načítám profily…": "Loading profiles…",
+  "Přepnout obě desky": "Switch both boards",
+  "Volbu potvrdíš jednou. Obě desky přejdou společně, 30 s ověří nový režim a pak jej uloží. Bez potvrzeného spojení se vrátí na původní profil. Přepínej ještě v dosahu.": "Confirm once. Both boards switch together, verify the new mode for 30 s, then save it. Without a confirmed connection they return to the previous profile. Switch while still within range.",
+  "RTK terénní test": "RTK field test",
+  "Od poslední celé korekční dávky": "Time since the last complete correction epoch",
+  "A zůstane na místě, s B můžeš vyrazit.": "Leave A in place and take B with you.",
+  "Připrav test poblíž druhé desky.": "Prepare the test near the other board.",
+  "Interval doručení": "Delivery interval",
+  "Průměr —": "Average —",
+  "Nejdelší mezera": "Longest gap",
+  "Včetně aktuálního výpadku": "Including the current outage",
+  "Celé dávky": "Complete epochs",
+  "Neúplné: 0": "Incomplete: 0",
+  "Doručená data": "Delivered data",
+  "Celé dávky: — B/s": "Complete epochs: — B/s",
+  "Měření se objeví po spuštění.": "Measurements appear after the test starts.",
+  "Nastavení korekčního provozu": "Correction traffic settings",
+  "Model dávky · 10 družic na soustavu, 2 signály": "Epoch model · 10 satellites per constellation, 2 signals",
+  "Základna → přijímač": "Base → rover",
+  "Délka testu": "Test duration",
+  "Generování dávek": "Epoch generation",
+  "Každou 1 s (1 Hz)": "Every 1 s (1 Hz)",
+  "Každé 2 s": "Every 2 s",
+  "Každých 5 s": "Every 5 s",
+  "Každých 10 s": "Every 10 s",
+  "2 sekundách": "2 seconds",
+  "5 sekundách": "5 seconds",
+  "10 sekundách": "10 seconds",
+  "20 sekundách": "20 seconds",
+  "Bez fronty a bez opakování. V režimu maximum vzniká čerstvá dávka, jakmile lze začít vysílat. Při pravidelném generování se nové dávky během obsazení zahazují; právě vysílaná se dokončí nejdéle do limitu stáří.": "No queue and no retries. In maximum-rate mode a fresh epoch is generated as soon as transmission can begin. During periodic generation, new epochs are dropped while busy; the active transmission must finish within the age limit.",
+  "Spustit na obou deskách": "Start on both boards",
+  "Uložit měření": "Save measurements",
+  "Simulace přenosu, bez GPS.": "Transmission simulation, without GPS.",
+  "Rámce mají RTCM3 obálku, CRC a modelované velikosti; obsahují testovací data, ne použitelná měření družic. Rychlost je průměr za 5 s. Stáří dávky ani zvolený limit nepotvrzuje centimetrovou přesnost. Během testu se profil při výpadku nemění. Výsledky jsou v RAM; před vypnutím je ulož.": "Frames have an RTCM3 envelope, CRC and modeled sizes; they contain test data, not usable satellite measurements. Throughput is averaged over 5 s. Neither epoch age nor the chosen limit establishes centimeter accuracy. The profile stays unchanged during outages in a running test. Results are in RAM; save them before powering off.",
+  "Směr testu": "Test direction",
+  "A ↔ B střídavě": "A ↔ B alternating",
+  "Zatím bez měření.": "No measurements yet.",
+  "Průběh doručených bajtů za sekundu": "Delivered bytes per second over time",
+  "Rychlost znamená skutečně přijatá testovací data, průměrovaná za posledních 5 s. Výsledky druhé desky přicházejí rádiem; jejich stáří je uvedené. Ztráty během testu zahrnují zatím zjištěné mezery, konec se dopočítá po závěrečné výměně.": "Throughput measures test data actually received, averaged over the last 5 s. The other board's results arrive over radio; their age is shown. Losses during the test include gaps detected so far; final losses are calculated after the closing exchange.",
+  "Test zatíží spojení na maximum při limitu 10 % vysílacího času každé desky. A ↔ B střídá vysílání a zahrnuje režii hlášení výsledků. Po testu můžeš pokračovat v chatu. Zkušební data se neukládají do historie.": "The test saturates the connection within each board's 10% transmit duty-cycle limit. A ↔ B alternates transmission and includes result-reporting overhead. You can resume chatting after the test. Test data is not stored in chat history.",
+  "Uložit výsledek": "Save results",
+  "Obnovit základní LoRa": "Restore basic LoRa",
+  "869,525 MHz · 10 dBm · vysílání nejvýše 10 % času. Restart zachová uložený rádiový režim. Mimo běžící test se po 20 s neúspěšného hledání obnoví LoRa SF7. Při RTK testu mimo dosah je nutné obnovit profil ručně na obou deskách, nebo vyčkat do konce testu.": "869.525 MHz · 10 dBm · maximum 10% transmit duty cycle. Restart preserves the saved radio mode. Outside a running test, LoRa SF7 is restored after 20 s of unsuccessful discovery. During an out-of-range RTK test, restore the profile manually on both boards or wait for the test to finish.",
+  "Ve frontě": "Queued",
+  "Odesílám": "Sending",
+  "✓ Doručeno druhé desce": "✓ Delivered to the other board",
+  "Přijato": "Received",
+  "Nepotvrzené doručení": "Delivery not acknowledged",
+  "Zrušeno": "Cancelled",
+  "Požadavek se nezdařil.": "The request failed.",
+  "Pošli první zprávu. Chat funguje bez internetu.": "Send your first message. The chat works without internet access.",
+  "Druhá stanice": "Other station",
+  "↓ Uložit soubor": "↓ Save file",
+  "Soubor nelze stáhnout.": "Cannot download the file.",
+  "Zrušit": "Cancel",
+  "Připoj se k Wi-Fi desky": "Connect to the board's Wi-Fi",
+  "Nelze načíst stav místní desky. Síla rádiového spojení není známá.": "Cannot read the local board status. Radio link strength is unknown.",
+  " · bez měření": " · no measurement",
+  "Příjem z desky ": "Reception from board ",
+  ". Poslední kontakt před ": ". Last contact ",
+  " s. Klepnutím zobrazíš podrobnosti.": " s ago. Tap to view details.",
+  "Čekám na ověřený příjem z druhé desky.": "Waiting for authenticated reception from the other board.",
+  "Chyba rádia": "Radio error",
+  "Rádio není připravené.": "The radio is not ready.",
+  " · hledám stanici": " · searching for station",
+  " · čekám na signál": " · waiting for signal",
+  "slabý signál": "weak signal",
+  "nižší signál": "fair signal",
+  "dobrý signál": "good signal",
+  "silný signál": "strong signal",
+  ". Podrobnosti rádiového spojení.": ". Radio link details.",
+  "Základna A → přijímač B": "Base A → rover B",
+  "Základna B → přijímač A": "Base B → rover A",
+  "základna": "base",
+  "přijímač pro chůzi": "mobile rover",
+  "Běží": "Running",
+  "Ukončeno": "Finished",
+  " B/dávka · ": " B/epoch · ",
+  "Průměr ": "Average ",
+  "Neúplné: ": "Incomplete: ",
+  "Celé dávky: ": "Complete epochs: ",
+  "Čekám na hlášení přijímače.": "Waiting for a receiver report.",
+  "Hlášení přijímače před ": "Receiver report age: ",
+  " · zastaralé": " · stale",
+  "Místní měření přijímače": "Local receiver measurements",
+  " · živě": " · live",
+  " · konečný stav": " · final state",
+  "generování po ": "generation interval: ",
+  "Režim: ": "Mode: ",
+  "Přijato ": "Received ",
+  " fragmentech; celé dávky ": " fragments; complete epochs ",
+  ". Odhad stáří při doručení ": ". Estimated age on delivery ",
+  ". Chybný obsah: ": ". Invalid content: ",
+  "Vygenerováno ": "Generated ",
+  ", zahozeno při obsazení ": ", dropped while busy ",
+  ", přerušeno ": ", interrupted ",
+  "Celých odesláno ": "Complete epochs sent ",
+  ", nedoručeno celých ": ", complete epochs not delivered ",
+  "Chyby vysílače ": "Transmitter errors ",
+  "Vzorky jsou pouze z doby otevřené stránky. Souhrn drží deska v RAM do restartu nebo dalšího testu.": "Samples cover only the time this page was open. The board keeps the summary in RAM until a restart or the next test.",
+  "Tento směr se netestuje.": "This direction is not being tested.",
+  "Čekám na výsledky příjemce…": "Waiting for receiver results…",
+  " B/s · přijato ": " B/s · received ",
+  " · ztráty ": " · lost ",
+  "konečný výsledek": "final result",
+  "hlášení před ": "report age: ",
+  "místní měření": "local measurements",
+  " · hlášení je zastaralé": " · report is stale",
+  " B/s · posledních ": " B/s · last ",
+  " vzorků": " samples",
+  " Nominálně ": " Nominal ",
+  " kbit/s; užitečné B/s změří test.": " kbit/s; the test measures useful B/s.",
+  "Čekám na seznam profilů.": "Waiting for the profile list.",
+  " · 869,525 MHz · 10 dBm · nejvýše 10 % vysílacího času.": " · 869.525 MHz · 10 dBm · maximum 10% transmit duty cycle.",
+  "Starší firmware": "Older firmware",
+  "Připraveno": "Ready",
+  " · ověření ještě ": " · verification remaining: ",
+  "Příjem z ": "Reception from ",
+  " · GFSK bez měření SNR": " · GFSK has no SNR measurement",
+  " · před ": " · age: ",
+  "bez měření": "no measurement",
+  " Přepnutí vyžaduje firmware 1.5.0 na obou deskách.": " Switching requires firmware 1.5.0 on both boards.",
+  "Měřený režim: ": "Tested mode: ",
+  "Přepnout OBĚ desky z „": "Switch BOTH boards from “",
+  "“?\n\nPo společném přepnutí se spojení 30 sekund ověřuje. Každá deska se při neúspěšném ověření vrátí na původní profil. Rychlejší režim může mít menší dosah.": "”?\n\nAfter switching together, the connection is verified for 30 seconds. Each board returns to the original profile if verification fails. A faster mode may have a shorter range.",
+  "Příjem na ": "Reception at ",
+  "chyba rádia": "radio error",
+  " · živě ~1 Hz": " · live ~1 Hz",
+  "Stáří: ": "Age: ",
+  "Bez ověřeného příjmu": "No authenticated reception",
+  "GFSK měření SNR neposkytuje": "GFSK does not provide SNR measurements",
+  "Čekám na čerstvé měření": "Waiting for a fresh measurement",
+  "Signál je pod úrovní šumu": "The signal is below the noise level",
+  "Odstup signálu od šumu": "Signal-to-noise ratio",
+  " ověřených · ": " authenticated · ",
+  " odmítnutých": " rejected",
+  " místních opakovaných pokusů": " local retries",
+  "RSSI × SNR, nikoli I/Q. Jeden bod je průměr paketů za sekundu; záporné SNR je u LoRa možné.": "RSSI × SNR, not I/Q. Each point is the average of packets received in one second; negative SNR is possible with LoRa.",
+  "V režimu GFSK není SNR dostupné. Bodovou mapu proto nelze vykreslit.": "SNR is unavailable in GFSK mode, so the scatter plot cannot be drawn.",
+  "Příjem / s · horní mez grafu ": "Reception / s · chart upper limit ",
+  " rámců": " frames",
+  "Ověřený tok rámců: ": "Authenticated frame throughput: ",
+  " B/s (včetně hlaviček a šifrování, průměr až 10 s).": " B/s (including headers and encryption, averaged over up to 10 s).",
+  "Ověřené rámce": "Authenticated frames",
+  "Chyby rádiové hlavičky": "Radio header errors",
+  "Neplatný formát / cizí rámce": "Invalid format / foreign frames",
+  "Neplatná autentizace": "Invalid authentication",
+  "Stará / neověřená relace": "Stale / unverified session",
+  "Párování před ověřením": "Pairing before verification",
+  "Chyby čtení rádia": "Radio read errors",
+  "Mezery v číslování protějšku": "Peer sequence gaps",
+  "Duplicitní chatové rámce": "Duplicate chat frames",
+  "Místní TX úspěch / chyba": "Local TX success / failure",
+  "Místní opakované pokusy": "Local retries",
+  "Potvrzené rámce po opakování": "Frames acknowledged after a retry",
+  "Potvrzené celé zprávy": "Complete messages acknowledged",
+  "Bity opravené FEC": "Bits corrected by FEC",
+  "Čip údaj neposkytuje": "Not provided by the chip",
+  "Doba měření": "Measurement duration",
+  "Analýza vyžaduje firmware 1.6.0.": "Analysis requires firmware 1.6.0.",
+  "Nelze načíst měření.": "Cannot load measurements.",
+  "Wi-Fi odpojena nebo měření nedostupné. Zobrazené údaje jsou zastaralé.": "Wi-Fi disconnected or measurements unavailable. Displayed data is stale.",
+  "Pokračovat živě": "Resume live view",
+  "Grafy pozastavené. Deska dál měří; po obnovení se načtou poslední 2 minuty.": "Charts paused. The board keeps measuring; resuming loads the last 2 minutes.",
+  "Soukromé spojení je navázáno.": "The private connection is established.",
+  "Čekám na odpověď druhé desky.": "Waiting for the other board to reply.",
+  "Desky se se stejným klíčem automaticky spojí.": "Boards with the same key pair automatically.",
+  "Rádio se nespustilo (kód ": "The radio failed to start (code ",
+  "). Zkontroluj propojení modulu Wio-SX1262.": "). Check the Wio-SX1262 module connections.",
+  "Úložiště není dostupné.": "Storage is unavailable.",
+  "Spojení se přerušilo. Zprávy počkají ve frontě.": "The connection was lost. Messages will wait in the queue.",
+  "Zapni obě desky. Spárování proběhne automaticky; zprávy zatím počkají ve frontě.": "Turn on both boards. Pairing is automatic; messages will wait in the queue.",
+  "Signál": "Signal",
+  "Poslední kontakt": "Last contact",
+  "Odesláno / přijato": "Sent / received",
+  "Opakování": "Retries",
+  "Volné úložiště": "Free storage",
+  "Běh desky": "Board uptime",
+  "Servisní / datové pakety": "Service / data packets",
+  "Režie mého vysílání": "Local transmit overhead",
+  "Párovací pakety": "Pairing packets",
+  "Obnovy rádia": "Radio recoveries",
+  "Odesílání": "Sending",
+  "Příjem": "Receiving",
+  "Čeká na spojení": "Waiting for connection",
+  " · současně přijímám ": " · also receiving ",
+  "Wi-Fi odpojena. Výsledky se neobnovují.": "Wi-Fi disconnected. Results are not updating.",
+  "Wi-Fi odpojena · zobrazené hodnoty jsou zastaralé.": "Wi-Fi disconnected · displayed values are stale.",
+  "Obrázek nelze přečíst.": "Cannot read the image.",
+  "Převod obrázku selhal.": "Image conversion failed.",
+  "Vyber soubor menší než 25 MB; fotografie se poté zmenší.": "Choose a file smaller than 25 MB; photos will then be resized.",
+  "Soubor má ": "File size: ",
+  "Soubor je prázdný.": "The file is empty.",
+  " · rychlost závisí na rádiovém režimu a spojení": " · speed depends on the radio mode and connection",
+  " · zmenšená fotografie": " · resized photo",
+  "Text překročil 2048 bajtů. Zkrať zprávu.": "The text exceeds 2048 bytes. Shorten the message.",
+  "Enter = nový řádek · ↑ = odeslat": "Enter adds a new line · ↑ sends",
+  "Smazat historii i uložené soubory na této desce?": "Delete the history and saved files on this board?",
+  "Nejdřív vyber aktualizační soubor .ota.": "First select an .ota update file.",
+  "Nejdřív dokonči nebo zruš přenosy.": "Finish or cancel transfers first.",
+  "Vyber platný balíček LoRaChat-": "Select a valid package: LoRaChat-",
+  "Nahrát nový firmware do stanice ": "Upload new firmware to station ",
+  "? Po úspěšné kontrole se deska restartuje.": "? The board will restart after successful verification.",
+  "Nahrávám přes Wi-Fi…": "Uploading over Wi-Fi…",
+  "Nahrávám ": "Uploading ",
+  "Chybí potvrzení aktualizace. Zkontroluj spojení s deskou.": "Update confirmation is missing. Check the connection to the board.",
+  "Aktualizace se nezdařila.": "The update failed.",
+  "Ověřeno. Deska se restartuje; zůstaň připojený k její Wi-Fi.": "Verified. The board is restarting; stay connected to its Wi-Fi.",
+  "Spojení se přerušilo. Znovu se připoj k Wi-Fi a ověř verzi firmwaru.": "The connection was lost. Reconnect to Wi-Fi and check the firmware version.",
+  "Vypršel čas. Znovu se připoj a ověř stav desky.": "Timed out. Reconnect and check the board status.",
+  "Odesílání zrušeno; doručení mohlo již proběhnout.": "Sending cancelled; delivery may already have completed.",
+  "Přenos už není ve frontě.": "The transfer is no longer queued.",
+  "Nejdřív dokončete nebo zrušte přenosy.": "Finish or cancel transfers first.",
+  "Neznámý požadavek.": "Unknown request.",
+  "Vypršel čas pro aktualizaci.": "The update timed out.",
+  "Test ukončen. Čekám na výsledky druhé desky.": "Test finished. Waiting for results from the other board.",
+  "Obnovena základní LoRa. Při RTK testu mimo dosah obnovte i druhou desku ručně; jinak se vrátí po skončení testu.": "Basic LoRa restored. During an out-of-range RTK test, restore the other board manually too; otherwise it will return when the test ends.",
+  "Neplatný režim nebo parametry testu.": "Invalid mode or test parameters.",
+  "Počkejte na spojení. Obě desky musí mít firmware 1.2.0 nebo novější.": "Wait for the connection. Both boards need firmware 1.2.0 or later.",
+  "Nejdřív dokončete přenos, test nebo přepnutí.": "Finish the transfer, test or profile switch first.",
+  "Pro bezpečné přepínání aktualizujte obě desky na 1.5.0.": "Update both boards to 1.5.0 for safe profile switching.",
+  "RTK simulace vyžaduje firmware 1.3.0 na obou deskách.": "RTK simulation requires firmware 1.3.0 on both boards.",
+  "Nejdřív přepněte rádiový režim.": "Switch the radio mode first.",
+  "Tento režim už je aktivní.": "This mode is already active.",
+  "Čekám na souhlas druhé desky…": "Waiting for the other board's approval…",
+  "Test ukončen. Přijaty výsledky druhé desky.": "Test finished. Results received from the other board.",
+  "Druhá deska připravuje změnu…": "The other board is preparing the change…",
+  "Druhá deska odmítla požadavek: je zaneprázdněná nebo má jiný režim.": "The other board rejected the request: it is busy or using a different mode.",
+  "Potvrzeno. Společný start za několik sekund…": "Confirmed. Starting together in a few seconds…",
+  "Příprava zrušena druhou deskou.": "Preparation cancelled by the other board.",
+  "Druhá deska se restartovala. Vracím původní režim.": "The other board restarted. Restoring the original mode.",
+  "Nový režim ověřen v obou směrech a uložen.": "The new mode was verified in both directions and saved.",
+  "Nový režim se nepotvrdil. Vracím původní režim.": "The new mode was not confirmed. Restoring the original mode.",
+  "Přepnutí nebylo odesláno. Zkuste znovu.": "The switch request was not sent. Try again.",
+  "Rádio odmítlo nový režim. Vracím původní.": "The radio rejected the new mode. Restoring the original.",
+  "Obě desky zkoušejí nový režim. Ověřuji obousměrné spojení…": "Both boards are trying the new mode. Verifying the connection in both directions…",
+  "Probíhá test propustnosti.": "A throughput test is running.",
+  "Druhá deska nepotvrdila požadavek. Režim se nezměnil.": "The other board did not confirm the request. The mode is unchanged.",
+  "Test dokončen. Čekám na závěrečné výsledky druhé desky.": "Test completed. Waiting for the other board's final results.",
+  "Stop nebyl potvrzen. Vzdálený test skončí nejpozději po zvolené době.": "Stop was not acknowledged. The remote test will finish no later than the selected duration.",
+  "Druhá deska neodpověděla na hledání. Obnovena základní LoRa.": "The other board did not respond to discovery. Basic LoRa restored.",
+  "RTK simulace skončila. Výsledky zůstávají do dalšího testu nebo restartu.": "RTK simulation finished. Results remain until the next test or restart.",
+  "RTK simulace běží. Rádiový režim se při ztrátě dosahu nemění.": "RTK simulation is running. The radio mode stays unchanged when the link goes out of range.",
+  "Místní RTK test skončil. Pokud druhá deska Stop neslyšela, doběhne zvolenou dobu.": "The local RTK test finished. If the other board missed Stop, it will run for the selected duration.",
+  "Výchozí kompromis dosahu a rychlosti.": "Default balance between range and speed.",
+  "Vyšší citlivost, nejnižší propustnost.": "Higher sensitivity, lowest throughput.",
+  "Rychlý přenos, porovnej s dosahem LoRa.": "Fast transfer; compare its range with LoRa.",
+  "Rychlý GMSK profil; skutečné B/s změří test.": "Fast GMSK profile; the test measures actual B/s.",
+  "Rychlejší LoRa, menší rezerva slabého signálu.": "Faster LoRa with a smaller weak-signal margin.",
+  "Nejrychlejší zdejší LoRa; otestuj dosah.": "The fastest LoRa profile here; test its range.",
+  "Nejrychlejší GMSK profil; nejprve přepni zblízka.": "The fastest GMSK profile; switch at close range first.",
+  "Užší přijímací pásmo; kandidát na větší dosah než rychlé GFSK.": "Narrower receive bandwidth; a candidate for better range than fast GFSK.",
+  "Tvoje stanice": "Your station",
+  "Stanice —": "Station —",
+  "Znovu vyhledat druhou desku": "Find the other board again",
+  "Historie a soubory": "History and files",
+  "Exportovat chat": "Export chat",
+  "Smazat historii": "Clear history",
+  "Vyber soubor": "Choose file",
+  "Odeslat": "Send",
+  "Propustnost ↔": "Throughput ↔",
+  "Kvalita": "Quality",
+  "RSSI paketu": "Packet RSSI",
+  "Mapa kvality · RSSI × SNR": "Quality plot · RSSI × SNR",
+  "Pozastavit grafy": "Pause charts",
+  "MSM4 · 4 soustavy · 733 B": "MSM4 · 4 constellations · 733 B",
+  "MSM7 · 4 soustavy · 1 141 B": "MSM7 · 4 constellations · 1,141 B",
+  "1 minuta": "1 minute",
+  "15 minut": "15 minutes",
+  "30 minut": "30 minutes",
+  "1 hodina": "1 hour",
+  "Co nejrychleji": "As fast as possible",
+  "Zahodit rozpracovanou po": "Discard an unfinished epoch after",
+  "Zastavit": "Stop",
+  "30 sekund": "30 seconds",
+  "2 minuty": "2 minutes",
+  "5 minut": "5 minutes",
+  "10 minut": "10 minutes",
+  "Spustit test": "Start test",
+  " · ty": " · you",
+  "Wi-Fi odpojena": "Wi-Fi disconnected",
+  "Kód ": "Code ",
+  " · bez odezvy": " · no response",
+  " · tato deska: ": " · this board: ",
+  " · sestavuji…": " · assembling…",
+  "co nejrychleji": "as fast as possible",
+  " · limit ": " · limit ",
+  " v ": " in ",
+  " · start za ": " · starts in ",
+  "“ na „": "” to “",
+  "bez odezvy": "no response",
+  "Chyby CRC": "CRC errors",
+  "Stanice ": "Station ",
+  ". Maximum je 64 kB.": ". The maximum is 64 kB.",
+  "Kontroluji firmware…": "Verifying firmware…",
+  "Jazyk / Language": "Language / Jazyk"
+};
+  const storageKey = 'lora.ui-language';
+  let language = navigator.language.toLowerCase().startsWith('cs') ? 'cs' : 'en';
+  try {
+    const saved = localStorage.getItem(storageKey);
+    if (saved === 'cs' || saved === 'en') language = saved;
+  } catch { /* Storage is optional; the current visit still supports both languages. */ }
+
+  const bindings = new Map();
+  function t(key, ...values) {
+    if (key == null) return '';
+    const translated = language === 'en' ? english[key] ?? key : key;
+    if (!values.length) return String(translated);
+    return String(translated).replace(/\{(\d+)\}/g, (_, index) => String(values[Number(index)] ?? ''));
+  }
+  function message(value) {
+    const original = Object.keys(english).find(key => english[key] === value) ?? value;
+    return t(original);
+  }
+  function bind(node, property, render) {
+    let properties = bindings.get(node);
+    if (!properties) { properties = new Map(); bindings.set(node, properties); }
+    properties.set(property, render);
+    render();
+  }
+  function bindText(node, render) {
+    const value = render();
+    node.textContent = value;
+    // Update only the owned text node, preserving appended actions and user controls.
+    const textNode = node.firstChild || node.appendChild(document.createTextNode(''));
+    bind(textNode, 'nodeValue', () => { textNode.nodeValue = render(); });
+    return value;
+  }
+  function prune() {
+    for (const node of bindings.keys()) if (!node.isConnected) bindings.delete(node);
+  }
+  // Only the original static markup is scanned. Dynamic user names are never scanned.
+  const walker = document.createTreeWalker(document.documentElement, NodeFilter.SHOW_TEXT);
+  const originalNodes = [];
+  while (walker.nextNode()) originalNodes.push(walker.currentNode);
+  for (const node of originalNodes) {
+    if (node.parentElement?.closest('script, style, textarea')) continue;
+    const source = node.nodeValue, key = source.trim();
+    if (Object.hasOwn(english, key)) {
+      bind(node, 'nodeValue', () => { node.nodeValue = source.replace(key, () => t(key)); });
+    }
+  }
+  for (const element of document.querySelectorAll('[placeholder], [aria-label], [title]')) {
+    for (const attribute of ['placeholder', 'aria-label', 'title']) {
+      const source = element.getAttribute(attribute);
+      if (source && Object.hasOwn(english, source)) {
+        bind(element, attribute, () => element.setAttribute(attribute, t(source)));
+      }
+    }
+  }
+  const selector = document.getElementById('ui-language');
+  function selectLanguage(value) {
+    if (value !== 'en' && value !== 'cs') return;
+    language = value;
+    document.documentElement.lang = value;
+    selector.value = value;
+    try { localStorage.setItem(storageKey, value); } catch { /* Keep the in-memory choice. */ }
+    prune();
+    for (const properties of bindings.values()) for (const render of properties.values()) render();
+    document.dispatchEvent(new Event('lora-languagechange'));
+  }
+  window.LoRaI18n = { t, message, bindText, prune, get locale() { return language === 'cs' ? 'cs-CZ' : 'en-US'; } };
+  selector.addEventListener('change', () => selectLanguage(selector.value));
+  selectLanguage(language);
+})();
+
+const i18n=window.LoRaI18n,tr=i18n.t;
 const $ = id => document.getElementById(id);
 let state=null, token='', attachment=null, attachmentURL='', busy=false, lastMessages='', fileGeneration=0, firmwareBusy=false;
 const encoder=new TextEncoder();
-const statuses={queued:'Ve frontě',sending:'Odesílám',delivered:'✓ Doručeno druhé desce',received:'Přijato',failed:'Nepotvrzené doručení',cancelled:'Zrušeno'};
+const statuses=()=>({queued:tr('Ve frontě'),sending:tr('Odesílám'),delivered:tr('✓ Doručeno druhé desce'),received:tr('Přijato'),failed:tr('Nepotvrzené doručení'),cancelled:tr('Zrušeno')});
 const bytes=n => n<1024 ? n+' B' : (n/1024).toFixed(1)+' kB';
-function error(message=''){ $('error').textContent=message; $('error').hidden=!message; }
-function el(tag,cls,text){ const e=document.createElement(tag); if(cls)e.className=cls; if(text!==undefined)e.textContent=text; return e; }
+function error(message=''){ i18n.bindText($('error'),()=>(i18n.message(message))); $('error').hidden=!message; }
+function el(tag,cls,text){ const e=document.createElement(tag); if(cls)e.className=cls; if(text!==undefined)i18n.bindText(e,text); return e; }
 async function api(path,options={}){
  const response=await fetch(path,{...options,headers:{...(options.headers||{}),'X-Chat-Token':token},cache:'no-store'});
- const body=await response.json(); if(!response.ok)throw new Error(body.error||'Požadavek se nezdařil.'); return body;
+ const body=await response.json(); if(!response.ok)throw new Error(tr(body.error)||tr('Požadavek se nezdařil.')); return body;
 }
 function renderMessages(list){
  const key=JSON.stringify(list); if(key===lastMessages)return; lastMessages=key;
  const box=$('messages'),atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<100;
  box.replaceChildren();
- if(!list.length){const empty=el('div','empty');empty.append(el('div','empty-icon','↔'),el('b','','Tak daleko. Tak blízko.'),el('span','','Pošli první zprávu. Chat funguje bez internetu.'));box.append(empty);return;}
+ if(!list.length){const empty=el('div','empty');empty.append(el('div','empty-icon',()=>('↔')),el('b','',()=>(tr('Tak daleko. Tak blízko.'))),el('span','',()=>(tr('Pošli první zprávu. Chat funguje bez internetu.'))));box.append(empty);return;}
  for(const m of list){
   const row=el('article','message'+(m.outgoing?' out':'')),bubble=el('div','bubble');
-  row.append(el('div','author',(m.author||'Druhá stanice')+(m.outgoing?' · ty':'')));
+  row.append(el('div','author',()=>((m.author||tr('Druhá stanice'))+(m.outgoing?tr(' · ty'):''))));
   if(m.file){
    if(/^image\/(jpeg|png|webp)$/.test(m.mime)){const img=el('img','preview');img.src='/api/file?id='+encodeURIComponent(m.id)+'&preview=1';img.alt=m.name;img.loading='lazy';bubble.append(img);}
-   bubble.append(el('div','file-title',m.name),el('div','file-size',bytes(m.size)));
-   const a=el('a','download','↓ Uložit soubor');a.href='/api/file?id='+encodeURIComponent(m.id);a.download=m.name;
-   a.addEventListener('click',async event=>{event.preventDefault();try{const r=await fetch(a.href);if(!r.ok)throw new Error('Soubor nelze stáhnout.');const url=URL.createObjectURL(await r.blob());const dl=el('a');dl.href=url;dl.download=m.name;document.body.append(dl);dl.click();dl.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}catch(e){error(e.message);}});
+   bubble.append(el('div','file-title',()=>(m.name)),el('div','file-size',()=>(bytes(m.size))));
+   const a=el('a','download',()=>(tr('↓ Uložit soubor')));a.href='/api/file?id='+encodeURIComponent(m.id);a.download=m.name;
+   a.addEventListener('click',async event=>{event.preventDefault();try{const r=await fetch(a.href);if(!r.ok)throw new Error(tr('Soubor nelze stáhnout.'));const url=URL.createObjectURL(await r.blob());const dl=el('a');dl.href=url;dl.download=m.name;document.body.append(dl);dl.click();dl.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}catch(e){error(e.message);}});
    bubble.append(a);
-  } else bubble.textContent=m.text;
+  } else i18n.bindText(bubble,()=>(m.text));
   row.append(bubble);
-  const meta=el('div','meta'+(m.status==='failed'?' failed':''),(statuses[m.status]||m.status)+(m.error?' · '+m.error:''));
-  if(m.outgoing&&['queued','sending'].includes(m.status)){const cancel=el('button','cancel','Zrušit');cancel.type='button';cancel.onclick=async()=>{try{await api('/api/cancel?id='+encodeURIComponent(m.id),{method:'POST'});await refresh();}catch(e){error(e.message);}};meta.append(' · ',cancel);}
+  const meta=el('div','meta'+(m.status==='failed'?' failed':''),()=>((statuses()[m.status]||m.status)+(m.error?' · '+tr(m.error):'')));
+  if(m.outgoing&&['queued','sending'].includes(m.status)){const cancel=el('button','cancel',()=>(tr('Zrušit')));cancel.type='button';cancel.onclick=async()=>{try{await api('/api/cancel?id='+encodeURIComponent(m.id),{method:'POST'});await refresh();}catch(e){error(e.message);}};meta.append(' · ',cancel);}
   row.append(meta);box.append(row);
  }
  if(atBottom)box.scrollTop=box.scrollHeight;
 }
 function linkStatus(s){
- if(!s)return {level:0,kind:'offline',label:'Wi-Fi odpojena',detail:'Připoj se k Wi-Fi desky',title:'Nelze načíst stav místní desky. Síla rádiového spojení není známá.'};
+ if(!s)return {level:0,kind:'offline',label:tr('Wi-Fi odpojena'),detail:tr('Připoj se k Wi-Fi desky'),title:tr('Nelze načíst stav místní desky. Síla rádiového spojení není známá.')};
  const gfsk=s.radio?.modulation==='GFSK',mod=gfsk?'GFSK':'LoRa';
  const peer=s.node==='A'?'B':'A',measured=s.paired&&s.rxPackets>0&&Number.isFinite(s.rssi)&&(gfsk||Number.isFinite(s.snr))&&s.peerAge>=0;
- const detail=measured?mod+' '+Math.round(s.rssi)+' dBm · '+s.peerAge+' s':mod+' · bez měření';
- const title=measured?'Příjem z desky '+peer+': RSSI '+s.rssi+' dBm'+(gfsk?'':', SNR '+s.snr+' dB')+'. Poslední kontakt před '+s.peerAge+' s. Klepnutím zobrazíš podrobnosti.':'Čekám na ověřený příjem z druhé desky.';
- if(!s.radioReady)return {level:0,kind:'offline',label:'Chyba rádia',detail:'Kód '+s.radioError,title:'Rádio není připravené.'};
- if(!measured)return {level:0,kind:'offline',label:peer+' · hledám stanici',detail,title};
- if(!s.online||s.peerAge>=120)return {level:0,kind:'offline',label:peer+' · bez odezvy',detail,title};
- if(s.peerAge>=90)return {level:0,kind:'stale',label:peer+' · čekám na signál',detail,title};
+ const detail=measured?mod+' '+Math.round(s.rssi)+' dBm · '+s.peerAge+' s':mod+tr(' · bez měření');
+ const title=measured?tr('Příjem z desky ')+peer+': RSSI '+s.rssi+' dBm'+(gfsk?'':', SNR '+s.snr+' dB')+tr('. Poslední kontakt před ')+s.peerAge+tr(' s. Klepnutím zobrazíš podrobnosti.'):tr('Čekám na ověřený příjem z druhé desky.');
+ if(!s.radioReady)return {level:0,kind:'offline',label:tr('Chyba rádia'),detail:tr('Kód ')+s.radioError,title:tr('Rádio není připravené.')};
+ if(!measured)return {level:0,kind:'offline',label:peer+tr(' · hledám stanici'),detail,title};
+ if(!s.online||s.peerAge>=120)return {level:0,kind:'offline',label:peer+tr(' · bez odezvy'),detail,title};
+ if(s.peerAge>=90)return {level:0,kind:'stale',label:peer+tr(' · čekám na signál'),detail,title};
  // ponytail: coarse SF7 signal bands; actual delivery quality also depends on interference.
  const rssi=gfsk?(s.rssi>=-75?4:s.rssi>=-85?3:s.rssi>=-95?2:1):(s.rssi>=-90?4:s.rssi>=-105?3:s.rssi>=-115?2:1);
  const snr=gfsk?4:s.snr>=5?4:s.snr>=0?3:s.snr>=-5?2:1,level=Math.min(rssi,snr);
- return {level,kind:level<=2?'weak':'online',label:peer+' · '+['','slabý signál','nižší signál','dobrý signál','silný signál'][level],detail,title};
+ return {level,kind:level<=2?'weak':'online',label:peer+' · '+['',tr('slabý signál'),tr('nižší signál'),tr('dobrý signál'),tr('silný signál')][level],detail,title};
 }
 function renderSignal(s){
  const link=linkStatus(s);$('badge').className='badge '+link.kind;$('badge').title=link.title;
- $('badge').setAttribute('aria-label',link.label+'. '+link.detail+'. Podrobnosti rádiového spojení.');
- $('connection').textContent=link.label;$('signalValue').textContent=link.detail;
+ $('badge').setAttribute('aria-label',link.label+'. '+link.detail+tr('. Podrobnosti rádiového spojení.'));
+ i18n.bindText($('connection'),()=>(link.label));i18n.bindText($('signalValue'),()=>(link.detail));
  [...$('signalBars').children].forEach((bar,i)=>bar.classList.toggle('on',i<link.level));
 }
 let labRequestBusy=false,lastProfile=-1,chartId=0,chartSecond=-1,chartSamples=[];
@@ -195,27 +637,27 @@ function renderRtk(s,blocked){
  $('saveRtk').disabled=!t;
  for(const id of ['rtkPreset','rtkDirection','rtkSeconds','rtkIntervalInput','rtkTtl'])$(id).disabled=blocked;
  if(t&&t.id!==rtkId){rtkId=t.id;rtkSecond=-1;rtkSamples=[];$('rtkSetup').open=!t.active;}
- $('rtkAge').textContent=seconds(age);
+ i18n.bindText($('rtkAge'),()=>(seconds(age)));
  $('rtkHero').classList.toggle('waiting',!!t&&(!rx?.complete||age>5000||!fresh));
- $('rtkRole').textContent=t?(t.sender===1?'Základna A → přijímač B':'Základna B → přijímač A')+' · tato deska: '+(t.localSender?'základna':'přijímač pro chůzi'):'A zůstane na místě, s B můžeš vyrazit.';
- $('rtkProgress').textContent=t?(t.active?'Běží':'Ukončeno')+' · '+Math.floor(t.elapsedMs/1000)+' / '+Math.round(t.durationMs/1000)+' s · '+t.epochBytes+' B/dávka · '+t.profileName:'Připrav test poblíž druhé desky.';
- $('rtkInterval').textContent=seconds(rx?.lastIntervalMs);$('rtkMean').textContent='Průměr '+seconds(rx?.meanIntervalMs);
- $('rtkGap').textContent=seconds(rx?Math.max(rx.maxGapMs,age):null);
- $('rtkComplete').textContent=rx?String(rx.complete):'—';
- $('rtkPartial').textContent='Neúplné: '+(rx?rx.partial:'—')+(t?.assembling?' · sestavuji…':'');
- $('rtkRate').textContent=fresh?rx.rate+' B/s':'— B/s';
- $('rtkUseful').textContent='Celé dávky: '+(fresh?rx.usefulRate+' B/s':'— B/s');
- $('rtkFresh').textContent=!t?'Měření se objeví po spuštění.':!rx?'Čekám na hlášení přijímače.':t.localSender?'Hlášení přijímače před '+seconds(t.peerAgeMs)+(fresh?'':' · zastaralé'):'Místní měření přijímače'+(t.active?' · živě':' · konečný stav');
+ i18n.bindText($('rtkRole'),()=>(t?(t.sender===1?tr('Základna A → přijímač B'):tr('Základna B → přijímač A'))+tr(' · tato deska: ')+(t.localSender?tr('základna'):tr('přijímač pro chůzi')):tr('A zůstane na místě, s B můžeš vyrazit.')));
+ i18n.bindText($('rtkProgress'),()=>(t?(t.active?tr('Běží'):tr('Ukončeno'))+' · '+Math.floor(t.elapsedMs/1000)+' / '+Math.round(t.durationMs/1000)+' s · '+t.epochBytes+tr(' B/dávka · ')+t.profileName:tr('Připrav test poblíž druhé desky.')));
+ i18n.bindText($('rtkInterval'),()=>(seconds(rx?.lastIntervalMs)));i18n.bindText($('rtkMean'),()=>(tr('Průměr ')+seconds(rx?.meanIntervalMs)));
+ i18n.bindText($('rtkGap'),()=>(seconds(rx?Math.max(rx.maxGapMs,age):null)));
+ i18n.bindText($('rtkComplete'),()=>(rx?String(rx.complete):'—'));
+ i18n.bindText($('rtkPartial'),()=>(tr('Neúplné: ')+(rx?rx.partial:'—')+(t?.assembling?tr(' · sestavuji…'):'')));
+ i18n.bindText($('rtkRate'),()=>(fresh?rx.rate+' B/s':'— B/s'));
+ i18n.bindText($('rtkUseful'),()=>(tr('Celé dávky: ')+(fresh?rx.usefulRate+' B/s':'— B/s')));
+ i18n.bindText($('rtkFresh'),()=>(!t?tr('Měření se objeví po spuštění.'):!rx?tr('Čekám na hlášení přijímače.'):t.localSender?tr('Hlášení přijímače před ')+seconds(t.peerAgeMs)+(fresh?'':tr(' · zastaralé')):tr('Místní měření přijímače')+(t.active?tr(' · živě'):tr(' · konečný stav'))));
  if(t){
-  const source=tx||(!t.localSender?t.local:null),kind=t.intervalMs?'generování po '+seconds(t.intervalMs):'co nejrychleji';
-  $('rtkDetails').textContent='Režim: '+kind+' · limit '+seconds(t.ttlMs)+'. '+
-   (rx?'Přijato '+bytes(rx.bytes)+' v '+rx.fragments+' fragmentech; celé dávky '+bytes(rx.completeBytes)+'. Odhad stáří při doručení '+seconds(rx.deliveryAgeMs)+'. Chybný obsah: '+rx.bad+'. ':'')+
-   (source?'Vygenerováno '+source.generated+', zahozeno při obsazení '+source.busyDrops+', přerušeno '+source.expired+'. ':'')+
-   (final?'Celých odesláno '+tx.sent+', nedoručeno celých '+lost+'. ':t.localSender&&tx?'Celých odesláno '+tx.sent+'. ':'')+
-   (tx?'Chyby vysílače '+tx.txErrors+'. ':'');
+  const source=tx||(!t.localSender?t.local:null),kind=t.intervalMs?tr('generování po ')+seconds(t.intervalMs):tr('co nejrychleji');
+  i18n.bindText($('rtkDetails'),()=>(tr('Režim: ')+kind+tr(' · limit ')+seconds(t.ttlMs)+'. '+
+   (rx?tr('Přijato ')+bytes(rx.bytes)+tr(' v ')+rx.fragments+tr(' fragmentech; celé dávky ')+bytes(rx.completeBytes)+tr('. Odhad stáří při doručení ')+seconds(rx.deliveryAgeMs)+tr('. Chybný obsah: ')+rx.bad+'. ':'')+
+   (source?tr('Vygenerováno ')+source.generated+tr(', zahozeno při obsazení ')+source.busyDrops+tr(', přerušeno ')+source.expired+'. ':'')+
+   (final?tr('Celých odesláno ')+tx.sent+tr(', nedoručeno celých ')+lost+'. ':t.localSender&&tx?tr('Celých odesláno ')+tx.sent+'. ':'')+
+   (tx?tr('Chyby vysílače ')+tx.txErrors+'. ':'')));
   const sec=Math.floor(t.elapsedMs/1000);
   if(sec!==rtkSecond){rtkSecond=sec;rtkSamples.push({elapsedMs:t.elapsedMs,rssi:s.rssi,snr:s.snr,radioAgeSeconds:s.peerAge,receiverReportFresh:fresh,ageMs:age,receiver:rx,transmitter:tx});if(rtkSamples.length>3601)rtkSamples.shift();}
- } else $('rtkDetails').textContent='';
+ } else i18n.bindText($('rtkDetails'),()=>(''));
 }
 function selectLabTab(mode){
  for(const id of ['rtk','bench','quality']){$(id+'Pane').hidden=id!==mode;$(id+'Tab').classList.toggle('selected',id===mode);$(id+'Tab').setAttribute('aria-pressed',String(id===mode));}
@@ -227,23 +669,23 @@ $('startRtk').onclick=()=>labAction('/api/rtk',{direction:Number($('rtkDirection
 $('stopRtk').onclick=()=>labAction('/api/rtk/stop');
 $('saveRtk').onclick=()=>{
  if(!state?.rtk)return;
- const data={recordedAt:new Date().toISOString(),synthetic:true,node:state.node,firmware:state.version,radio:state.radio,rtk:state.rtk,samples:rtkSamples,sampleNote:'Vzorky jsou pouze z doby otevřené stránky. Souhrn drží deska v RAM do restartu nebo dalšího testu.'};
+ const data={recordedAt:new Date().toISOString(),synthetic:true,node:state.node,firmware:state.version,radio:state.radio,rtk:state.rtk,samples:rtkSamples,sampleNote:tr('Vzorky jsou pouze z doby otevřené stránky. Souhrn drží deska v RAM do restartu nebo dalšího testu.')};
  const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})),a=el('a');a.href=url;a.download='rtk-test-'+state.rtk.id+'-'+state.node+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
 };
 function benchCard(prefix,d){
  const available=d?.enabled&&d.known,live=available&&(d.fresh||d.final);
- $(prefix+'Rate').textContent=live?d.rate+' B/s':'— B/s';
- $(prefix+'Bits').textContent=live?(d.rate*8/1000).toFixed(2)+' kbit/s':'— kbit/s';
- $(prefix+'Stats').textContent=!d?.enabled?'Tento směr se netestuje.':!available?'Čekám na výsledky příjemce…':
-  'Průměr '+d.average+' B/s · přijato '+bytes(d.bytes)+' · ztráty '+d.lost+'/'+d.expected+' ('+d.lossPct.toFixed(1)+' %) · '+
-  (d.final?'konečný výsledek':d.reportAgeMs?'hlášení před '+(d.reportAgeMs/1000).toFixed(1)+' s':'místní měření')+(live?'':' · hlášení je zastaralé');
+ i18n.bindText($(prefix+'Rate'),()=>(live?d.rate+' B/s':'— B/s'));
+ i18n.bindText($(prefix+'Bits'),()=>(live?(d.rate*8/1000).toFixed(2)+' kbit/s':'— kbit/s'));
+ i18n.bindText($(prefix+'Stats'),()=>(!d?.enabled?tr('Tento směr se netestuje.'):!available?tr('Čekám na výsledky příjemce…'):
+  tr('Průměr ')+d.average+tr(' B/s · přijato ')+bytes(d.bytes)+tr(' · ztráty ')+d.lost+'/'+d.expected+' ('+d.lossPct.toFixed(1)+' %) · '+
+  (d.final?tr('konečný výsledek'):d.reportAgeMs?tr('hlášení před ')+(d.reportAgeMs/1000).toFixed(1)+' s':tr('místní měření'))+(live?'':tr(' · hlášení je zastaralé'))));
 }
 function drawBench(b){
- if(!b){chartId=0;chartSamples=[];chartSecond=-1;$('abLine').setAttribute('d','');$('baLine').setAttribute('d','');$('chartScale').textContent='B/s';return;}
+ if(!b){chartId=0;chartSamples=[];chartSecond=-1;$('abLine').setAttribute('d','');$('baLine').setAttribute('d','');i18n.bindText($('chartScale'),()=>('B/s'));return;}
  if(chartId!==b.id){chartId=b.id;chartSamples=[];chartSecond=-1;}
  const second=Math.floor(b.elapsedMs/1000);
  if(second!==chartSecond){chartSecond=second;chartSamples.push([b.aToB.enabled&&b.aToB.known&&b.aToB.fresh?b.aToB.rate:null,b.bToA.enabled&&b.bToA.known&&b.bToA.fresh?b.bToA.rate:null]);if(chartSamples.length>120)chartSamples.shift();}
- const max=Math.max(100,...chartSamples.flat().filter(Number.isFinite));$('chartScale').textContent=Math.ceil(max)+' B/s · posledních '+chartSamples.length+' vzorků';
+ const max=Math.max(100,...chartSamples.flat().filter(Number.isFinite));i18n.bindText($('chartScale'),()=>(Math.ceil(max)+tr(' B/s · posledních ')+chartSamples.length+tr(' vzorků')));
  for(const [j,id] of [[0,'abLine'],[1,'baLine']]){let path='',gap=true;chartSamples.forEach((p,i)=>{if(p[j]===null){gap=true;return;}path+=(gap?'M':'L')+(i*600/Math.max(1,chartSamples.length-1)).toFixed(1)+' '+(118-p[j]/max*116).toFixed(1)+' ';gap=false;});$(id).setAttribute('d',path);}
 }
 function renderLab(s){
@@ -251,29 +693,29 @@ function renderLab(s){
  const profiles=r?.profiles||[],profileSelect=$('radioProfile'),signature=JSON.stringify(profiles);
  if(profileSelect.dataset.profiles!==signature){
   const selected=profileSelect.value;profileSelect.replaceChildren();
-  for(const p of profiles){const option=el('option');option.value=String(p.id);option.textContent=p.name;profileSelect.append(option);}
+  for(const p of profiles){const option=el('option');option.value=String(p.id);i18n.bindText(option,()=>(p.name));profileSelect.append(option);}
   profileSelect.dataset.profiles=signature;profileSelect.value=profiles.some(p=>String(p.id)===selected)?selected:String(r?.profile||0);
  }
  if(r&&r.profile!==lastProfile){lastProfile=r.profile;$('radioProfile').value=String(r.profile);}
  const chosen=profiles.find(p=>p.id===Number(profileSelect.value));
- $('profileHint').textContent=chosen?(chosen.hint||'')+(chosen.rawKbps?' Nominálně '+chosen.rawKbps.toLocaleString('cs-CZ',{maximumFractionDigits:2})+' kbit/s; užitečné B/s změří test.':''):'Čekám na seznam profilů.';
- $('radioParameters').textContent=(r?.name||'LoRa SF7 / 125 kHz')+' · 869,525 MHz · 10 dBm · nejvýše 10 % vysílacího času.';
- $('labStatus').textContent=(r?.name||'Starší firmware')+' · '+(b?.active?'Test '+Math.floor(b.elapsedMs/1000)+' / '+Math.round(b.durationMs/1000)+' s':r?.message||'Připraveno')+(r?.countdownMs?' · start za '+Math.ceil(r.countdownMs/1000)+' s':'')+(r?.verifying?' · ověření ještě '+Math.ceil(r.verifyRemainingMs/1000)+' s':'');
- $('labSignal').textContent='Příjem z '+(s.node==='A'?'B':'A')+': '+(s.paired&&s.rxPackets?s.rssi.toFixed(0)+' dBm'+(Number.isFinite(s.snr)?' · SNR '+s.snr.toFixed(1)+' dB':' · GFSK bez měření SNR')+' · před '+s.peerAge+' s':'bez měření');
+ i18n.bindText($('profileHint'),()=>(chosen?tr(chosen.hint||'')+(chosen.rawKbps?tr(' Nominálně ')+chosen.rawKbps.toLocaleString(i18n.locale,{maximumFractionDigits:2})+tr(' kbit/s; užitečné B/s změří test.'):''):tr('Čekám na seznam profilů.')));
+ i18n.bindText($('radioParameters'),()=>((r?.name||'LoRa SF7 / 125 kHz')+tr(' · 869,525 MHz · 10 dBm · nejvýše 10 % vysílacího času.')));
+ i18n.bindText($('labStatus'),()=>((r?.name||tr('Starší firmware'))+' · '+(b?.active?'Test '+Math.floor(b.elapsedMs/1000)+' / '+Math.round(b.durationMs/1000)+' s':tr(r?.message)||tr('Připraveno'))+(r?.countdownMs?tr(' · start za ')+Math.ceil(r.countdownMs/1000)+' s':'')+(r?.verifying?tr(' · ověření ještě ')+Math.ceil(r.verifyRemainingMs/1000)+' s':'')));
+ i18n.bindText($('labSignal'),()=>(tr('Příjem z ')+(s.node==='A'?'B':'A')+': '+(s.paired&&s.rxPackets?s.rssi.toFixed(0)+' dBm'+(Number.isFinite(s.snr)?' · SNR '+s.snr.toFixed(1)+' dB':tr(' · GFSK bez měření SNR'))+tr(' · před ')+s.peerAge+' s':tr('bez měření'))));
  $('applyProfile').disabled=blocked||!s.online||!r?.peerSwitchCapable||!chosen||Number($('radioProfile').value)===r?.profile;
- if(r&&!r.busy&&!r.peerSwitchCapable)$('profileHint').textContent+=' Přepnutí vyžaduje firmware 1.5.0 na obou deskách.';
+ if(r&&!r.busy&&!r.peerSwitchCapable)$('profileHint').textContent+=tr(' Přepnutí vyžaduje firmware 1.5.0 na obou deskách.');
  $('startBench').disabled=blocked||!s.online||!r?.peerCapable||s.queue>0||!!s.receiving;
  $('stopBench').disabled=labRequestBusy||!b?.active||r?.switching;
  $('radioProfile').disabled=blocked;$('benchDirection').disabled=blocked;$('benchSeconds').disabled=blocked;
  $('rescueRadio').disabled=firmwareBusy||labRequestBusy;$('saveBench').disabled=!b;
- $('benchProfile').textContent=b?'Měřený režim: '+(b.profileName||r?.name||'—'):'';
+ i18n.bindText($('benchProfile'),()=>(b?tr('Měřený režim: ')+(b.profileName||r?.name||'—'):''));
  benchCard('ab',b?.aToB);benchCard('ba',b?.bToA);drawBench(b);
  renderRtk(s,blocked);
 }
 async function labAction(path,body){
  if(!token||labRequestBusy)return;labRequestBusy=true;$('labError').hidden=true;if(state)renderLab(state);
  try{await api(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});await refresh();}
- catch(e){$('labError').textContent=e.message;$('labError').hidden=false;}
+ catch(e){i18n.bindText($('labError'),()=>(e.message));$('labError').hidden=false;}
  finally{labRequestBusy=false;if(state)renderLab(state);}
 }
 $('openLab').onclick=()=>{$('labDialog').showModal();if(state)renderLab(state);};
@@ -282,7 +724,7 @@ $('radioProfile').onchange=()=>{if(state)renderLab(state);};
 function profileChangeRequest(s,profile,ask){
  const r=s?.radio,p=r?.profiles?.find(p=>p.id===profile);
  if(!p||!s.online||r.busy||!r.peerSwitchCapable||profile===r.profile)return null;
- const prompt='Přepnout OBĚ desky z „'+r.name+'“ na „'+p.name+'“?\n\nPo společném přepnutí se spojení 30 sekund ověřuje. Každá deska se při neúspěšném ověření vrátí na původní profil. Rychlejší režim může mít menší dosah.';
+ const prompt=tr('Přepnout OBĚ desky z „')+r.name+tr('“ na „')+p.name+tr('“?\n\nPo společném přepnutí se spojení 30 sekund ověřuje. Každá deska se při neúspěšném ověření vrátí na původní profil. Rychlejší režim může mít menší dosah.');
  return ask(prompt)?{profile,fromProfile:r.profile,confirmed:true}:null;
 }
 $('applyProfile').onclick=()=>{const request=profileChangeRequest(state,Number($('radioProfile').value),window.confirm.bind(window));if(request)labAction('/api/radio',request);};
@@ -302,14 +744,14 @@ function qualitySvg(tag,attrs){const e=document.createElementNS('http://www.w3.o
 function renderQuality(q){
  const v=qualityView(q),c=q.counts,w=q.window;
  $('qualityStatus').className=!q.radioReady?'quality-stale':'';
- $('qualityStatus').textContent='Příjem na '+q.node+' · '+q.profileName+' · '+(q.radioReady?(q.online?'spojeno':'bez odezvy'):'chyba rádia')+' · živě ~1 Hz';
- $('qualityRssi').textContent=v.rssi===null?'— dBm':v.rssi.toFixed(1)+' dBm';
- $('qualityAge').textContent=q.signalAgeMs>=0?'Stáří: '+seconds(q.signalAgeMs):'Bez ověřeného příjmu';
- $('qualitySnr').textContent=v.snr===null?'— dB':(v.snr>0?'+':'')+v.snr.toFixed(1)+' dB';
- $('qualitySnrNote').textContent=!q.lora?'GFSK měření SNR neposkytuje':v.snr===null?'Čekám na čerstvé měření':v.snr<0?'Signál je pod úrovní šumu':'Odstup signálu od šumu';
- $('qualityReject').textContent=v.rejected===null?'— %':v.rejected.toFixed(1)+' %';
- $('qualityWindow').textContent=w.accepted+' ověřených · '+w.rejected+' odmítnutých';
- $('qualityRecovered').textContent=c.recovered;$('qualityRetries').textContent=c.retries+' místních opakovaných pokusů';
+ i18n.bindText($('qualityStatus'),()=>(tr('Příjem na ')+q.node+' · '+q.profileName+' · '+(q.radioReady?(q.online?'spojeno':tr('bez odezvy')):tr('chyba rádia'))+tr(' · živě ~1 Hz')));
+ i18n.bindText($('qualityRssi'),()=>(v.rssi===null?'— dBm':v.rssi.toFixed(1)+' dBm'));
+ i18n.bindText($('qualityAge'),()=>(q.signalAgeMs>=0?tr('Stáří: ')+seconds(q.signalAgeMs):tr('Bez ověřeného příjmu')));
+ i18n.bindText($('qualitySnr'),()=>(v.snr===null?'— dB':(v.snr>0?'+':'')+v.snr.toFixed(1)+' dB'));
+ i18n.bindText($('qualitySnrNote'),()=>(!q.lora?tr('GFSK měření SNR neposkytuje'):v.snr===null?tr('Čekám na čerstvé měření'):v.snr<0?tr('Signál je pod úrovní šumu'):tr('Odstup signálu od šumu')));
+ i18n.bindText($('qualityReject'),()=>(v.rejected===null?'— %':v.rejected.toFixed(1)+' %'));
+ i18n.bindText($('qualityWindow'),()=>(w.accepted+tr(' ověřených · ')+w.rejected+tr(' odmítnutých')));
+ i18n.bindText($('qualityRecovered'),()=>(c.recovered));i18n.bindText($('qualityRetries'),()=>(c.retries+tr(' místních opakovaných pokusů')));
  const x=age=>45+545*(1-age/120000),y=dbm=>135-(Math.max(-140,Math.min(-20,dbm))+140);
  for(const [id,col] of [['qualitySignalLine',4],['qualityChannelLine',6]]){
   let path='',previous=null;
@@ -319,57 +761,57 @@ function renderQuality(q){
  $('qualitySignalDots').replaceChildren(...v.samples.filter(p=>Number.isFinite(p[4])).map(p=>qualitySvg('circle',{cx:x(p[0]),cy:y(p[4]),r:2.5})));
  const cloud=q.lora?v.samples.filter(p=>Number.isFinite(p[4])&&Number.isFinite(p[5])):[];
  $('qualityScatter').replaceChildren(...cloud.map(p=>qualitySvg('circle',{cx:45+545*(Math.max(-140,Math.min(-20,p[4]))+140)/120,cy:140-125*(Math.max(-20,Math.min(30,p[5]))+20)/50,r:3.5})));
- $('qualityScatterNote').textContent=q.lora?'RSSI × SNR, nikoli I/Q. Jeden bod je průměr paketů za sekundu; záporné SNR je u LoRa možné.':'V režimu GFSK není SNR dostupné. Bodovou mapu proto nelze vykreslit.';
+ i18n.bindText($('qualityScatterNote'),()=>(q.lora?tr('RSSI × SNR, nikoli I/Q. Jeden bod je průměr paketů za sekundu; záporné SNR je u LoRa možné.'):tr('V režimu GFSK není SNR dostupné. Bodovou mapu proto nelze vykreslit.')));
  const max=Math.max(1,...v.samples.map(p=>p[1]+p[2])),bars=[];
  for(const p of v.samples){const good=75*p[1]/max,bad=75*p[2]/max;if(good)bars.push(qualitySvg('rect',{x:x(p[0])-2,y:85-good,width:3.5,height:good,fill:'#1c6456'}));if(bad)bars.push(qualitySvg('rect',{x:x(p[0])-2,y:85-good-bad,width:3.5,height:bad,fill:'#b44a35'}));}
- $('qualityBars').replaceChildren(...bars);$('qualityBarsLabel').textContent='Příjem / s · horní mez grafu '+max+' rámců';
- $('qualityRate').textContent='Ověřený tok rámců: '+Math.round(w.bytesPerSecond)+' B/s (včetně hlaviček a šifrování, průměr až 10 s).';
- const facts=[['Ověřené rámce',c.accepted],['Chyby CRC',c.crc],['Chyby rádiové hlavičky',c.header],['Neplatný formát / cizí rámce',c.format],['Neplatná autentizace',c.auth],['Stará / neověřená relace',c.session],['Párování před ověřením',c.handshake],['Chyby čtení rádia',c.io],['Mezery v číslování protějšku',c.gaps],['Duplicitní chatové rámce',c.duplicates],['Místní TX úspěch / chyba',c.txOK+' / '+c.txErrors],['Místní opakované pokusy',c.retries],['Potvrzené rámce po opakování',c.recovered],['Potvrzené celé zprávy',c.delivered],['Bity opravené FEC','Čip údaj neposkytuje'],['Doba měření',seconds(q.elapsedMs)]];
- $('qualityCounters').replaceChildren(...facts.flatMap(([k,value])=>[el('dt','',k),el('dd','',String(value))]));$('saveQuality').disabled=false;
+ $('qualityBars').replaceChildren(...bars);i18n.bindText($('qualityBarsLabel'),()=>(tr('Příjem / s · horní mez grafu ')+max+tr(' rámců')));
+ i18n.bindText($('qualityRate'),()=>(tr('Ověřený tok rámců: ')+Math.round(w.bytesPerSecond)+tr(' B/s (včetně hlaviček a šifrování, průměr až 10 s).')));
+ const facts=[[tr('Ověřené rámce'),c.accepted],[tr('Chyby CRC'),c.crc],[tr('Chyby rádiové hlavičky'),c.header],[tr('Neplatný formát / cizí rámce'),c.format],[tr('Neplatná autentizace'),c.auth],[tr('Stará / neověřená relace'),c.session],[tr('Párování před ověřením'),c.handshake],[tr('Chyby čtení rádia'),c.io],[tr('Mezery v číslování protějšku'),c.gaps],[tr('Duplicitní chatové rámce'),c.duplicates],[tr('Místní TX úspěch / chyba'),c.txOK+' / '+c.txErrors],[tr('Místní opakované pokusy'),c.retries],[tr('Potvrzené rámce po opakování'),c.recovered],[tr('Potvrzené celé zprávy'),c.delivered],[tr('Bity opravené FEC'),tr('Čip údaj neposkytuje')],[tr('Doba měření'),seconds(q.elapsedMs)]];
+ $('qualityCounters').replaceChildren(...facts.flatMap(([k,value])=>[el('dt','',()=>(k)),el('dd','',()=>(String(value)))]));$('saveQuality').disabled=false;
 }
 async function refreshQuality(){
  if(qualityLoading||qualityPaused||firmwareBusy)return;qualityLoading=true;
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),4000);
- try{const r=await fetch('/api/quality',{cache:'no-store',signal:controller.signal});if(r.status===404)throw new Error('Analýza vyžaduje firmware 1.6.0.');if(!r.ok)throw new Error('Nelze načíst měření.');const q=await r.json();if(!qualityPaused){qualityData=q;qualityRecordedAt=new Date().toISOString();renderQuality(q);}}
- catch(e){$('qualityStatus').className='quality-stale';$('qualityStatus').textContent=e.message==='Analýza vyžaduje firmware 1.6.0.'?e.message:'Wi-Fi odpojena nebo měření nedostupné. Zobrazené údaje jsou zastaralé.';}
+ try{const r=await fetch('/api/quality',{cache:'no-store',signal:controller.signal});if(r.status===404)throw new Error(tr('Analýza vyžaduje firmware 1.6.0.'));if(!r.ok)throw new Error(tr('Nelze načíst měření.'));const q=await r.json();if(!qualityPaused){qualityData=q;qualityRecordedAt=new Date().toISOString();renderQuality(q);}}
+ catch(e){$('qualityStatus').className='quality-stale';i18n.bindText($('qualityStatus'),()=>(e.message===tr('Analýza vyžaduje firmware 1.6.0.')?e.message:tr('Wi-Fi odpojena nebo měření nedostupné. Zobrazené údaje jsou zastaralé.')));}
  finally{clearTimeout(timer);qualityLoading=false;}
 }
-$('pauseQuality').onclick=()=>{qualityPaused=!qualityPaused;$('pauseQuality').textContent=qualityPaused?'Pokračovat živě':'Pozastavit grafy';if(qualityPaused){$('qualityStatus').className='quality-stale';$('qualityStatus').textContent='Grafy pozastavené. Deska dál měří; po obnovení se načtou poslední 2 minuty.';}else refreshQuality();};
+$('pauseQuality').onclick=()=>{qualityPaused=!qualityPaused;i18n.bindText($('pauseQuality'),()=>(qualityPaused?tr('Pokračovat živě'):tr('Pozastavit grafy')));if(qualityPaused){$('qualityStatus').className='quality-stale';i18n.bindText($('qualityStatus'),()=>(tr('Grafy pozastavené. Deska dál měří; po obnovení se načtou poslední 2 minuty.')));}else refreshQuality();};
 $('saveQuality').onclick=()=>{if(!qualityData)return;const data={recordedAt:qualityRecordedAt,kind:'radio-quality',sampleColumns:['ageMs','accepted','rejected','frameBytes','meanRssiDbm','meanSnrDb','minChannelDbm'],...qualityData};const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=el('a');a.href=url;a.download='kvalita-spoje-'+qualityData.node+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);};
 function render(s){
- $('firmwareVersion').textContent='Firmware '+(s.version||'—');$('otaFilename').textContent='LoRaChat-'+s.node+'.ota';
+ i18n.bindText($('firmwareVersion'),()=>('Firmware '+(s.version||'—')));i18n.bindText($('otaFilename'),()=>('LoRaChat-'+s.node+'.ota'));
  $('updateFirmware').disabled=firmwareBusy||!s.ota||s.radio?.busy;
- $('station').textContent='Stanice '+s.node;$('ssid').textContent=s.ssid;
- $('chatTitle').textContent='Stanice '+s.node+' ↔ '+(s.node==='A'?'B':'A');
+ i18n.bindText($('station'),()=>(tr('Stanice ')+s.node));i18n.bindText($('ssid'),()=>(s.ssid));
+ i18n.bindText($('chatTitle'),()=>(tr('Stanice ')+s.node+' ↔ '+(s.node==='A'?'B':'A')));
  renderSignal(s);
  renderLab(s);
- $('pairText').textContent=s.online?'Soukromé spojení je navázáno.':s.paired?'Čekám na odpověď druhé desky.':'Desky se se stejným klíčem automaticky spojí.';
- const modulation=s.radio?.modulation||'LoRa';$('linkPath').textContent=s.online?'A ━━━ '+modulation+' ━━━ B':'A · · · '+modulation+' · · · B';
+ i18n.bindText($('pairText'),()=>(s.online?tr('Soukromé spojení je navázáno.'):s.paired?tr('Čekám na odpověď druhé desky.'):tr('Desky se se stejným klíčem automaticky spojí.')));
+ const modulation=s.radio?.modulation||'LoRa';i18n.bindText($('linkPath'),()=>(s.online?'A ━━━ '+modulation+' ━━━ B':'A · · · '+modulation+' · · · B'));
  $('notice').hidden=s.online&&s.radioReady&&s.storageReady;
- $('notice').textContent=!s.radioReady?'Rádio se nespustilo (kód '+s.radioError+'). Zkontroluj propojení modulu Wio-SX1262.':!s.storageReady?'Úložiště není dostupné.':s.paired?'Spojení se přerušilo. Zprávy počkají ve frontě.':'Zapni obě desky. Spárování proběhne automaticky; zprávy zatím počkají ve frontě.';
- const facts=[['Signál',s.rxPackets?s.rssi.toFixed(0)+' dBm':'—'],['SNR',s.rxPackets&&Number.isFinite(s.snr)?s.snr.toFixed(1)+' dB':'—'],['Poslední kontakt',s.paired?s.peerAge+' s':'—'],['Odesláno / přijato',s.txPackets+' / '+s.rxPackets],['Opakování',s.retries],['Ve frontě',s.queue+' / 8'],['Volné úložiště',bytes(s.freeStorage)],['Běh desky',Math.floor(s.uptime/60)+' min']];
- if(s.link)facts.push(['Servisní / datové pakety',s.link.servicePackets+' / '+s.link.dataPackets],['Režie mého vysílání',s.link.servicePercent.toFixed(1)+' %'],['Párovací pakety',s.link.helloPackets],['Obnovy rádia',s.link.radioRecoveries]);
- $('diagnostics').replaceChildren(...facts.flatMap(([k,v])=>[el('dt','',k),el('dd','',String(v))]));
+ i18n.bindText($('notice'),()=>(!s.radioReady?tr('Rádio se nespustilo (kód ')+s.radioError+tr('). Zkontroluj propojení modulu Wio-SX1262.'):!s.storageReady?tr('Úložiště není dostupné.'):s.paired?tr('Spojení se přerušilo. Zprávy počkají ve frontě.'):tr('Zapni obě desky. Spárování proběhne automaticky; zprávy zatím počkají ve frontě.')));
+ const facts=[[tr('Signál'),s.rxPackets?s.rssi.toFixed(0)+' dBm':'—'],['SNR',s.rxPackets&&Number.isFinite(s.snr)?s.snr.toFixed(1)+' dB':'—'],[tr('Poslední kontakt'),s.paired?s.peerAge+' s':'—'],[tr('Odesláno / přijato'),s.txPackets+' / '+s.rxPackets],[tr('Opakování'),s.retries],[tr('Ve frontě'),s.queue+' / 8'],[tr('Volné úložiště'),bytes(s.freeStorage)],[tr('Běh desky'),Math.floor(s.uptime/60)+' min']];
+ if(s.link)facts.push([tr('Servisní / datové pakety'),s.link.servicePackets+' / '+s.link.dataPackets],[tr('Režie mého vysílání'),s.link.servicePercent.toFixed(1)+' %'],[tr('Párovací pakety'),s.link.helloPackets],[tr('Obnovy rádia'),s.link.radioRecoveries]);
+ $('diagnostics').replaceChildren(...facts.flatMap(([k,v])=>[el('dt','',()=>(k)),el('dd','',()=>(String(v)))]));
  renderMessages(s.messages||[]);
  const transfer=s.transfer,rx=s.receiving;
  $('activity').hidden=!transfer&&!rx;
- if(transfer||rx){const t=transfer||rx,n=transfer?t.sent:t.received;let label=transfer?'Odesílání':'Příjem';if(!s.online&&transfer)label='Čeká na spojení';let description=label+': '+bytes(n)+' / '+bytes(t.size)+' · '+Math.round(100*n/Math.max(1,t.size))+' %';if(transfer&&rx)description+=' · současně přijímám '+bytes(rx.received);$('activityText').textContent=description;$('progress').value=100*n/Math.max(1,t.size);}
+ if(transfer||rx){const t=transfer||rx,n=transfer?t.sent:t.received;let label=transfer?tr('Odesílání'):tr('Příjem');if(!s.online&&transfer)label=tr('Čeká na spojení');let description=label+': '+bytes(n)+' / '+bytes(t.size)+' · '+Math.round(100*n/Math.max(1,t.size))+' %';if(transfer&&rx)description+=tr(' · současně přijímám ')+bytes(rx.received);i18n.bindText($('activityText'),()=>(description));$('progress').value=100*n/Math.max(1,t.size);}
  $('send').disabled=busy||firmwareBusy||s.radio?.busy||!s.radioReady||!s.storageReady||s.queue>=8;
 }
 async function refresh(){
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);
  try{const r=await fetch('/api/state',{cache:'no-store',signal:controller.signal});if(!r.ok)throw new Error();state=await r.json();token=state.token;render(state);}
- catch(e){renderSignal(null);$('send').disabled=true;token='';$('labStatus').textContent='Wi-Fi odpojena. Výsledky se neobnovují.';$('rtkFresh').textContent='Wi-Fi odpojena · zobrazené hodnoty jsou zastaralé.';for(const id of ['startBench','applyProfile','stopBench','rescueRadio','startRtk','stopRtk'])$(id).disabled=true;}
+ catch(e){renderSignal(null);$('send').disabled=true;token='';i18n.bindText($('labStatus'),()=>(tr('Wi-Fi odpojena. Výsledky se neobnovují.')));i18n.bindText($('rtkFresh'),()=>(tr('Wi-Fi odpojena · zobrazené hodnoty jsou zastaralé.')));for(const id of ['startBench','applyProfile','stopBench','rescueRadio','startRtk','stopRtk'])$(id).disabled=true;}
  finally{clearTimeout(timer);}
 }
 function clearAttachment(){++fileGeneration;attachment=null;if(attachmentURL)URL.revokeObjectURL(attachmentURL);attachmentURL='';$('file').value='';$('attachment').hidden=true;}
 async function compressPhoto(file){
  const url=URL.createObjectURL(file);
  try{
-  const img=new Image();img.src=url;await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error('Obrázek nelze přečíst.'));});
+  const img=new Image();img.src=url;await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error(tr('Obrázek nelze přečíst.')));});
   const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
   let edge=320,quality=.62,blob;
-  for(let i=0;i<7;i++){const scale=Math.min(1,edge/Math.max(img.width,img.height));canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));if(!blob)throw new Error('Převod obrázku selhal.');if(blob.size<=10240)break;quality=Math.max(.32,quality-.07);edge=Math.round(edge*.85);}
+  for(let i=0;i<7;i++){const scale=Math.min(1,edge/Math.max(img.width,img.height));canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));if(!blob)throw new Error(tr('Převod obrázku selhal.'));if(blob.size<=10240)break;quality=Math.max(.32,quality-.07);edge=Math.round(edge*.85);}
   return new File([blob],file.name.replace(/\.[^.]*$/,'')+'-lora.jpg',{type:'image/jpeg'});
  }finally{URL.revokeObjectURL(url);}
 }
@@ -379,16 +821,16 @@ $('file').onchange=async()=>{
  const selected=$('file').files[0];if(!selected)return;const generation=++fileGeneration;error();
  busy=true;$('send').disabled=true;
  try{
-  if(selected.size>25*1024*1024)throw new Error('Vyber soubor menší než 25 MB; fotografie se poté zmenší.');
+  if(selected.size>25*1024*1024)throw new Error(tr('Vyber soubor menší než 25 MB; fotografie se poté zmenší.'));
   const photo=/^image\/(jpeg|png|webp|gif|bmp)$/.test(selected.type);
   const prepared=photo?await compressPhoto(selected):selected;
-  if(prepared.size>65536)throw new Error('Soubor má '+bytes(prepared.size)+'. Maximum je 64 kB.');
-  if(!prepared.size)throw new Error('Soubor je prázdný.');
+  if(prepared.size>65536)throw new Error(tr('Soubor má ')+bytes(prepared.size)+tr('. Maximum je 64 kB.'));
+  if(!prepared.size)throw new Error(tr('Soubor je prázdný.'));
   if(generation!==fileGeneration)return;
   attachment=prepared;if(attachmentURL)URL.revokeObjectURL(attachmentURL);attachmentURL=photo?URL.createObjectURL(prepared):'';
   $('attachmentImage').hidden=!photo;if(photo)$('attachmentImage').src=attachmentURL;
-  $('attachmentName').textContent=prepared.name;
-  $('attachmentSize').textContent=bytes(prepared.size)+' · rychlost závisí na rádiovém režimu a spojení'+(photo?' · zmenšená fotografie':'');
+  i18n.bindText($('attachmentName'),()=>(prepared.name));
+  i18n.bindText($('attachmentSize'),()=>(bytes(prepared.size)+tr(' · rychlost závisí na rádiovém režimu a spojení')+(photo?tr(' · zmenšená fotografie'):'')));
   $('attachment').hidden=false;
  }catch(e){error(e.message);}finally{busy=false;if(state)render(state);}
 };
@@ -396,7 +838,7 @@ $('composer').onsubmit=async event=>{
  event.preventDefault();if(busy||firmwareBusy||!token)return;
  const text=$('text').value.trim(),author=$('author').value.trim();
  if(!text&&!attachment)return;
- if(encoder.encode(text).length>2048){error('Text překročil 2048 bajtů. Zkrať zprávu.');return;}
+ if(encoder.encode(text).length>2048){error(tr('Text překročil 2048 bajtů. Zkrať zprávu.'));return;}
  busy=true;$('send').disabled=true;error();
  try{
   if(text){await api('/api/message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,author})});$('text').value='';$('text').dispatchEvent(new Event('input'));}
@@ -405,7 +847,7 @@ $('composer').onsubmit=async event=>{
  }catch(e){error(e.message);}finally{busy=false;if(state)render(state);}
 };
 $('text').onkeydown=e=>{if(!mobile.matches&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();$('composer').requestSubmit();}};
-$('text').oninput=()=>{const n=encoder.encode($('text').value).length;$('counter').textContent=n+' / 2048 B';$('counter').style.color=n>2048?'#a83f2c':'';$('text').style.height='auto';$('text').style.height=Math.min(140,$('text').scrollHeight)+'px';};
+$('text').oninput=()=>{const n=encoder.encode($('text').value).length;i18n.bindText($('counter'),()=>(n+' / 2048 B'));$('counter').style.color=n>2048?'#a83f2c':'';$('text').style.height='auto';$('text').style.height=Math.min(140,$('text').scrollHeight)+'px';};
 try{$('author').value=localStorage.getItem('lora-author')||'';}catch(e){}
 $('author').oninput=()=>{try{localStorage.setItem('lora-author',$('author').value);}catch(e){}};
 $('pair').onclick=async()=>{try{error();await api('/api/pair',{method:'POST'});}catch(e){error(e.message);}};
@@ -421,29 +863,48 @@ $('settingsDialog').addEventListener('close',()=>{document.querySelector('main')
 function fitViewport(){
  if(!mobile.matches&&$('settingsDialog').open)$('settingsDialog').close();
  if(!window.visualViewport||window.visualViewport.scale===1)document.documentElement.style.setProperty('--app-height',(window.visualViewport?.height||innerHeight)+'px');
- $('composeHint').textContent=mobile.matches?'Enter = nový řádek · ↑ = odeslat':'Enter odešle · Shift + Enter nový řádek';
+ i18n.bindText($('composeHint'),()=>(mobile.matches?tr('Enter = nový řádek · ↑ = odeslat'):tr('Enter odešle · Shift + Enter nový řádek')));
 }
 window.addEventListener('resize',fitViewport);window.visualViewport?.addEventListener('resize',fitViewport);fitViewport();
-$('clear').onclick=async()=>{if(!confirm('Smazat historii i uložené soubory na této desce?'))return;try{await api('/api/clear',{method:'POST'});error();await refresh();}catch(e){error(e.message);}};
+$('clear').onclick=async()=>{if(!confirm(tr('Smazat historii i uložené soubory na této desce?')))return;try{await api('/api/clear',{method:'POST'});error();await refresh();}catch(e){error(e.message);}};
 $('export').onclick=()=>{if(!state)return;const url=URL.createObjectURL(new Blob([JSON.stringify({node:state.node,messages:state.messages},null,2)],{type:'application/json'}));const a=el('a');a.href=url;a.download='lora-chat-'+state.node+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);};
 $('updateFirmware').onclick=async()=>{
  const file=$('firmwareFile').files[0];
- if(!file){$('otaStatus').textContent='Nejdřív vyber aktualizační soubor .ota.';return;}
+ if(!file){i18n.bindText($('otaStatus'),()=>(tr('Nejdřív vyber aktualizační soubor .ota.')));return;}
  if(firmwareBusy||!state||!token)return;
- if(state.queue||state.receiving){$('otaStatus').textContent='Nejdřív dokonči nebo zruš přenosy.';return;}
- if(!file.name.toLowerCase().endsWith('.ota')||file.size<336||file.size>3145808){$('otaStatus').textContent='Vyber platný balíček LoRaChat-'+state.node+'.ota.';return;}
- if(!confirm('Nahrát nový firmware do stanice '+state.node+'? Po úspěšné kontrole se deska restartuje.'))return;
- firmwareBusy=true;render(state);$('otaProgress').hidden=false;$('otaProgress').value=0;$('otaStatus').textContent='Nahrávám přes Wi-Fi…';
+ if(state.queue||state.receiving){i18n.bindText($('otaStatus'),()=>(tr('Nejdřív dokonči nebo zruš přenosy.')));return;}
+ if(!file.name.toLowerCase().endsWith('.ota')||file.size<336||file.size>3145808){i18n.bindText($('otaStatus'),()=>(tr('Vyber platný balíček LoRaChat-')+state.node+'.ota.'));return;}
+ if(!confirm(tr('Nahrát nový firmware do stanice ')+state.node+tr('? Po úspěšné kontrole se deska restartuje.')))return;
+ firmwareBusy=true;render(state);$('otaProgress').hidden=false;$('otaProgress').value=0;i18n.bindText($('otaStatus'),()=>(tr('Nahrávám přes Wi-Fi…')));
  const form=new FormData();form.append('firmware',file,file.name);
  const request=new XMLHttpRequest();request.open('POST','/api/update');request.setRequestHeader('X-Chat-Token',token);request.timeout=180000;
- request.upload.onprogress=event=>{if(event.lengthComputable){$('otaProgress').value=100*event.loaded/event.total;$('otaStatus').textContent=event.loaded===event.total?'Kontroluji firmware…':'Nahrávám '+Math.round(100*event.loaded/event.total)+' %';}};
- function failed(message){firmwareBusy=false;$('otaStatus').textContent=message;if(state)render(state);}
- request.onload=()=>{let result;try{result=JSON.parse(request.responseText);}catch(e){failed('Chybí potvrzení aktualizace. Zkontroluj spojení s deskou.');return;}if(request.status!==200||!result.ok){failed(result.error||'Aktualizace se nezdařila.');return;}$('otaProgress').value=100;$('otaStatus').textContent='Ověřeno. Deska se restartuje; zůstaň připojený k její Wi-Fi.';setTimeout(()=>{firmwareBusy=false;if(state)render(state);},15000);};
- request.onerror=()=>failed('Spojení se přerušilo. Znovu se připoj k Wi-Fi a ověř verzi firmwaru.');
- request.ontimeout=()=>failed('Vypršel čas. Znovu se připoj a ověř stav desky.');
+ request.upload.onprogress=event=>{if(event.lengthComputable){$('otaProgress').value=100*event.loaded/event.total;i18n.bindText($('otaStatus'),()=>(event.loaded===event.total?tr('Kontroluji firmware…'):tr('Nahrávám ')+Math.round(100*event.loaded/event.total)+' %'));}};
+ function failed(message){firmwareBusy=false;i18n.bindText($('otaStatus'),()=>(message));if(state)render(state);}
+ request.onload=()=>{let result;try{result=JSON.parse(request.responseText);}catch(e){failed(tr('Chybí potvrzení aktualizace. Zkontroluj spojení s deskou.'));return;}if(request.status!==200||!result.ok){failed(tr(result.error)||tr('Aktualizace se nezdařila.'));return;}$('otaProgress').value=100;i18n.bindText($('otaStatus'),()=>(tr('Ověřeno. Deska se restartuje; zůstaň připojený k její Wi-Fi.')));setTimeout(()=>{firmwareBusy=false;if(state)render(state);},15000);};
+ request.onerror=()=>failed(tr('Spojení se přerušilo. Znovu se připoj k Wi-Fi a ověř verzi firmwaru.'));
+ request.ontimeout=()=>failed(tr('Vypršel čas. Znovu se připoj a ověř stav desky.'));
  request.send(form);
 };
 (async function poll(){await refresh();if($('labDialog').open&&!$('qualityPane').hidden)await refreshQuality();setTimeout(poll,$('labDialog').open?1000:1500);})();
+
+document.addEventListener('lora-languagechange',()=>{
+  if(state){
+    const connected=!!token;
+    render(state);
+    if(!connected){
+      renderSignal(null);$('send').disabled=true;
+      i18n.bindText($('labStatus'),()=>tr('Wi-Fi odpojena. Výsledky se neobnovují.'));
+      i18n.bindText($('rtkFresh'),()=>tr('Wi-Fi odpojena · zobrazené hodnoty jsou zastaralé.'));
+      for(const id of ['startBench','applyProfile','stopBench','rescueRadio','startRtk','stopRtk'])$(id).disabled=true;
+    }
+  }
+  if(qualityData){
+    const stale=$('qualityStatus').classList.contains('quality-stale'),status=$('qualityStatus').textContent;
+    renderQuality(qualityData);
+    if(stale){$('qualityStatus').className='quality-stale';i18n.bindText($('qualityStatus'),()=>i18n.message(status));}
+  }
+  fitViewport();i18n.prune();
+});
 </script>
 </body>
 </html>

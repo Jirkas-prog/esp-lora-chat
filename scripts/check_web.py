@@ -35,7 +35,7 @@ assert.equal(linkStatus({...sample,snr:null}).level,0);
 console.log('PASS: LoRa strength, SNR limit, stale data, offline and unknown states');
 '''
 signal_test = root / 'test-output/signal-check.cjs'
-signal_test.write_text('function linkStatus(s){' + signal + check, encoding='utf-8')
+signal_test.write_text('const tr=s=>s;\nfunction linkStatus(s){' + signal + check, encoding='utf-8')
 subprocess.run(['node', str(signal_test)], check=True)
 rtk_view = script.split('function rtkView(t){', 1)[1].split('function renderRtk(s,blocked){', 1)[0]
 rtk_check = '''const assert=require('node:assert/strict');
@@ -80,7 +80,7 @@ for(const target of [0,8,-1,NaN])assert.equal(profileChangeRequest(s,target,forb
 console.log('PASS: explicit profile confirmation, cancel, source profile, busy/offline/legacy guards');
 '''
 switch_test = root / 'test-output/profile-ui-check.cjs'
-switch_test.write_text('function profileChangeRequest(s,profile,ask){' + switch_fn + switch_check, encoding='utf-8')
+switch_test.write_text('const tr=s=>s;\nfunction profileChangeRequest(s,profile,ask){' + switch_fn + switch_check, encoding='utf-8')
 subprocess.run(['node', str(switch_test)], check=True)
 quality_fn = script.split('function qualityView(q){',1)[1].split('function qualitySvg(',1)[0]
 quality_check = '''

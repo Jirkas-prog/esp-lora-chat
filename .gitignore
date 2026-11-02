@@ -27,3 +27,7 @@ PRIVATE*
 *.keystore
 *.p12
 releases/
+
+# Browser test reports
+test-results/
+playwright-report/

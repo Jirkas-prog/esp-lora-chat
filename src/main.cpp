@@ -26,7 +26,7 @@ constexpr uint8_t PEER = 3 - NODE_ID;
 constexpr size_t HISTORY_LIMIT = 32, QUEUE_LIMIT = 8;
 constexpr uint32_t ACK_TIMEOUT = 10000, RX_TIMEOUT = 120000;
 const char *NODE_NAME = NODE_ID == 1 ? "A" : "B";
-const char *FIRMWARE_VERSION = "1.6.0";
+const char *FIRMWARE_VERSION = "1.6.1";
 WebServer web(80);
 DNSServer dns;
 SX1262 radio = new Module(41, 39, 42, 40);
